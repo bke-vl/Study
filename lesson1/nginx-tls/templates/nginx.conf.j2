@@ -1,0 +1,11 @@
+server {
+    listen {{ nginx_port_tls }} ssl http2;
+    root /usr/share/nginx/html;
+    index index.html index.htm;
+    server_name {{ inventory_hostname }};
+    ssl_certificate /etc/ssl/certs/ansbl-1.crt;
+    ssl_certificate_key /etc/ssl/certs/ansbl-1.key;
+    location / {
+            try_files $uri $uri/ =404;
+    }
+}

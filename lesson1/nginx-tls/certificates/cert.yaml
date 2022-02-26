@@ -1,0 +1,17 @@
+---
+- name: generate local cert 
+  hosts: localhost
+  gather_facts: true
+  vars:
+    - server_hostname: ansbl-2.local
+    - key_size: 4096
+    - passphrase: # Set if you want passphrase
+    - key_type: DSA # Others include DSA, ECC, Ed25519, Ed448, X25519, X448
+    - cert_dir: /home/ansible/
+  tasks:
+    - name: Generate an OpenSSL private key
+      openssl_privatekey:
+        path: "{{ cert_dir }}/{{ server_hostname }}_privkey.pem"
+        size: "{{ key_size }}"
+        type: "{{ key_type }}"
+        backup: yes
