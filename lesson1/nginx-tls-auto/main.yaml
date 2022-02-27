@@ -1,0 +1,95 @@
+# Перед запуском установить модуль community.crypto командой: ansible-galaxy collection install community.crypto
+# Для генерации сертификата использовал свой скрипт, имя хостов ansbl-1 (управляющий) и ansbl-2
+---
+- name: configure https webserver nginx
+  hosts: nodes
+  gather_facts: true
+  become: true
+  vars:
+    nginx_port_tls: 443
+    nginx_port_http: 80
+  tasks:
+    - name: create nginx repo definition
+      copy:
+        src: nginx.repo
+        dest: /etc/yum.repos.d/nginx.repo
+        owner: ansible
+        group: ansible
+        mode: 0644
+
+    - name: install nginx
+      yum:
+        name: nginx
+        update_cache: true
+        state: present        
+
+    - name: copy main nginx config file
+      copy:
+        src: files/nginx.conf
+        dest: /etc/nginx/nginx.conf
+        owner: ansible
+        group: ansible
+        mode: 0644
+      notify: restart nginx
+
+    - name: copy site's nginx config file
+      template:
+        src: templates/nginx.conf.j2
+        dest: /etc/nginx/conf.d/tls.conf
+        owner: ansible
+        group: ansible
+        mode: 0644
+      notify: restart nginx
+
+    - name: copy openssl certificate generate script
+      copy:
+        src: generate.sh
+        dest: /tmp/
+        owner: ansible
+        group: ansible
+        mode: 0644
+
+    - name: switch to temp dir
+      #ansible.builtin.shell:
+      command: chmod +x /tmp/generate.sh
+
+    - name: launch openssl generate script
+      command: /tmp/generate.sh
+
+    - name: copy index.html
+      template:
+        src: templates/index.html.j2
+        dest: /usr/share/nginx/html/index.html
+        owner: ansible
+        group: ansible
+        mode: 0644
+      notify: restart nginx
+
+    - name: ensure nginx is enabled and started
+      service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: insert firewalld rule for nginx
+      firewalld:
+        port: "{{ nginx_port_tls }}/tcp"
+        permanent: true
+        state: enabled
+        immediate: true
+      ignore_errors: true
+
+  post_tasks:
+    - name: check web site from control server
+      uri:
+        url: "http://{{ ansible_host }}:{{ nginx_port_http }}"
+        return_content: true
+      connection: local
+      register: example_webpage_out
+      failed_when: example_webpage_out.status != 200
+
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted

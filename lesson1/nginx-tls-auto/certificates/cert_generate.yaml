@@ -1,0 +1,20 @@
+---
+- name: generate local cert 
+  hosts: nodes
+  gather_facts: true
+  become: true
+  tasks:
+    - name: copy openssl certificate generate script
+      copy:
+        src: generate.sh
+        dest: /tmp/
+        owner: ansible
+        group: ansible
+        mode: 0644
+
+    - name: switch to temp dir
+      #ansible.builtin.shell:
+      command: chmod +x /tmp/generate.sh
+
+    - name: launch openssl generate script
+      command: /tmp/generate.sh
