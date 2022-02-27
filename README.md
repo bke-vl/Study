@@ -1,13 +1,11 @@
-Задания по Ansible
+<b>Задания по Ansible</b>
 
-Хосты в /etc/ansible/hosts:
+Хосты в <b>/etc/ansible/hosts</b>:
 
-[nodes]
-ansbl-1 ansible_host=ansbl-1
+<b>[nodes]</b><p>
+ansbl-1 ansible_host=ansbl-1<p>
+ansbl-2 ansible_host=ansbl-2<p>
 
-ansbl-2 ansible_host=ansbl-2
-
-Адреса в /etc/hosts 
-192.168.0.151   ansbl-2 
-
-192.168.0.150   ansbl-1
+<b>Адреса в /etc/hosts</b><p>
+192.168.0.151   ansbl-2 <p>
+192.168.0.150   ansbl-1 
