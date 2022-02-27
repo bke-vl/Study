@@ -1,4 +1,4 @@
-# Перед запуском установить модуль community.crypto командой: ansible-galaxy collection install community.crypto
+# Не использовал ansible-galaxy collection install community.crypto
 # Для генерации сертификата использовал свой скрипт, имя хостов ansbl-1 (управляющий) и ansbl-2
 ---
 - name: configure https webserver nginx
