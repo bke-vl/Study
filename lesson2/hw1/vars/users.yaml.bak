@@ -1,0 +1,17 @@
+users_to_add:
+  - {name: user1, password: Qwerty1, comment: "Ansible generated user"}
+  - {name: user2, password: Qwerty2, comment: "Ansible generated user"}
+  - {name: user3, password: Qwerty3, comment: "Ansible generated user"}
+  - {name: user4, password: Qwerty4, comment: "Ansible generated user"}
+  - {name: user5, password: Qwerty5, comment: "Ansible generated user"}
+users_to_add:
+  - {login: 'user100', password: 'Qwerty1', comment: 'Ansible generated user'}
+  - {login: 'user101', password: 'Qwerty2', comment: 'Ansible generated user'}
+
+
+  users_to_add:
+  - { login: 'Petya', password: 'Qwerty1', comment: 'Ansible generated user' }
+  - { login: 'Sasha', password: 'Qwerty2', comment: 'Ansible generated user' }
+  - { login: 'Vasya', password: 'Qwerty3', comment: 'Ansible generated user' }
+  - { login: 'Yulya', password: 'Qwerty4', comment: 'Ansible generated user' }
+  - { login: 'Olya', password: 'Qwerty5', comment: 'Ansible generated user' }
