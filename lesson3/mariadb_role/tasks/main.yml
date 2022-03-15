@@ -1,0 +1,39 @@
+# # --------Uninstall
+#     - name: Deinstall 'mariadb-server' and 'MySQL-python' packages
+#       become: true
+#       yum:
+#           name: "{{ packages }}"
+#           state: absent
+#       tags: db
+#     - name:
+#       debug:
+#         msg: " Uninstalling successfull "
+#       tags: db
+
+- name: Installing DB
+  become: true  
+  block:
+    - name: Install 'mariadb-server' and 'MySQL-python' packages
+      yum:
+          name: "{{ packages }}"
+          state: present
+
+    - name: Ensure 'mariadb' service is started and enabled
+      service: 
+        name: mariadb 
+        state: started 
+        enabled: true
+
+    - name: Create database "{{ db_name }}" database
+      mysql_db:
+        name: "{{ db_name }}"
+        state: present
+
+    - name: Create DB user with ALL permissions to "{{ db_name }}"
+      mysql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+        priv: '{{ db_name }}.*:ALL'
+        state: present
+      no_log: true
+  tags: db
