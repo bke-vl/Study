@@ -1,0 +1,62 @@
+---
+- name: using roles
+  hosts: nodes
+  gather_facts: true
+  vars:
+    cert_gen: cert_role
+    nginx_install: nginx_role
+    db_install: mariadb_role
+    php_install: php_role
+    wordpress_install: wordpress_role
+
+  tasks:
+    - name: generating certificate
+      block:
+        - name: launching dynamic role cert_role
+          include_role:
+            name: "{{ cert_gen }}"
+      become: true
+      tags: cert
+      when: ansible_facts.distribution | lower == 'centos'
+
+    - name: install nginx
+      block:
+        - name: launching nginx installation role
+          include_role:
+            name: "{{ nginx_install }}"
+          vars:
+            nginx_port_tls: 443
+            nginx_port_http: 80
+      become: true
+      tags: nginx
+      when: ansible_facts.distribution | lower == 'centos'
+
+    - name: install mariadb
+      block:
+        - name: launching mariadb installation role
+          include_role:
+            name: "{{ db_install }}"
+          vars:
+            packages:
+              - mariadb-server
+              - MySQL-python
+      tags: db
+      when: ansible_facts.distribution | lower == 'centos'
+
+    - name: install php
+      block:
+        - name: launching php installation role
+          include_role:
+            name: "{{ php_install }}"
+      become: true
+      tags: php
+      when: ansible_facts.distribution | lower == 'centos'
+
+    - name: install wordpress
+      block:
+        - name: launching wordpress installation role
+          include_role:
+            name: "{{ wordpress_install }}"
+      become: true
+      tags: wp
+      when: ansible_facts.distribution | lower == 'centos'

@@ -1,0 +1,91 @@
+  - name: create nginx repo definition
+    copy:
+      src: nginx.repo
+      dest: /etc/yum.repos.d/nginx.repo
+      owner: ansible
+      group: ansible
+      mode: 0644
+    tags: nginx
+
+  - name: Gathering service facts (list)
+    service_facts:
+    register: service_facts_list
+    tags: nginx
+
+  - name: install nginx
+    yum:
+      name: nginx
+      update_cache: true
+      state: present
+    tags: nginx          
+
+  - name: copy main nginx config file
+    copy:
+      src: files/nginx.conf
+      dest: /etc/nginx/nginx.conf
+      owner: ansible
+      group: ansible
+      mode: 0644
+    tags: nginx
+    notify: restart nginx
+
+  - name: copy site's nginx config file
+    template:
+      src: templates/nginx.conf.j2
+      dest: /etc/nginx/conf.d/tls.conf
+      owner: ansible
+      group: ansible
+      mode: 0644
+    tags: nginx
+    notify: restart nginx
+
+  - name: copy selfsigned certificate
+    copy:
+      src: /tmp/certs/
+      dest: /etc/ssl/certs/
+      remote_src: yes
+      owner: ansible
+      group: ansible
+      mode: 0644
+    tags: nginx
+
+  - name: copy index.html
+    template:
+      src: templates/index.html.j2
+      dest: /usr/share/nginx/html/index.html
+      owner: ansible
+      group: ansible
+      mode: 0644
+    tags: nginx
+    notify: restart nginx
+
+  - name: ensure nginx is enabled and started
+    service:
+      name: nginx
+      state: started
+      enabled: true
+    tags: nginx
+
+  - name: insert firewalld rule for nginx
+    firewalld:
+      port: "{{ item }}"
+      permanent: true
+      state: enabled
+      immediate: true
+    when: service_facts_list.ansible_facts.services['firewalld.service'].state == "running"
+    loop:
+    - 80/tcp
+    - 443/tcp
+    tags: nginx
+    ignore_errors: true
+
+  - name: check web site from control server
+    uri:
+      url: "http://{{ ansible_host }}:{{ nginx_port_http }}"
+      return_content: true
+    connection: local
+    register: example_webpage_out
+    failed_when: example_webpage_out.status != 200
+    tags: nginx
+
+  

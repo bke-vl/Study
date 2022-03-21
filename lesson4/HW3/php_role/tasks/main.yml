@@ -1,0 +1,41 @@
+---
+- name: Copy nginx configuration from template for wordpress
+  template:
+      src: templates/nginx-wordpress.conf.j2
+      dest: /etc/nginx/conf.d/nginx-wordpress.conf
+      owner: ansible
+      group: ansible
+      mode: 0644
+  tags: php
+
+- name: Put repo files to /etc/yum.repos.d/ directory 
+  copy:
+      src: "{{ item }}"
+      dest: /etc/yum.repos.d/
+      owner: ansible
+      group: ansible
+      mode: 0644
+  with_fileglob: "*.repo"
+  tags: php
+
+- name: Install packages from 'php_packages_list'
+  yum:
+    name: "{{ php_packages_list }}"
+    state: present
+  tags: php
+
+- name: Remove default /etc/php-fpm.d/www.conf file
+  file:
+    path: /etc/php-fpm.d/www.conf
+    state: absent
+  tags: php
+
+- name: Copy wordpress.conf from files to /etc/php-fpm.d/wordpress.conf
+  copy:
+    src: files/wordpress.conf
+    dest: /etc/php-fpm.d/
+    owner: ansible
+    group: ansible
+    mode: 0644
+  tags: php
+  notify: restart php-fpm

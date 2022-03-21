@@ -1,0 +1,4 @@
+password: P@ssw0rd
+
+command to launch:
+ansible-playbook main.yaml --ask-vault-pass

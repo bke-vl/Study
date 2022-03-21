@@ -1,0 +1,70 @@
+---
+- name: >
+      Download WordPress from http://wordpress.org/wordpress-{{ wp_version }}.tar.gz
+      to /srv/ folder + checksum
+  get_url: 
+    url: "http://wordpress.org/wordpress-{{ wp_version }}.tar.gz"
+    dest: /tmp/
+    checksum: "{{ wp_checksum }}"
+  tags: wp
+
+- name: Create a directory for wordpress
+  file:
+    path: /srv/
+    state: directory
+    mode: 0755
+  tags: wp
+
+- name: Unarchive wordpress to /srv folder
+  unarchive:
+    src: "/tmp/wordpress-{{ wp_version }}.tar.gz"
+    dest: /srv/
+    remote_src: yes
+  tags: wp
+
+- name: Add linux group "wordpress"
+  group:
+    name: wordpress
+    state: present
+  tags: wp
+
+- name: >
+      Add linux user "wordpress" with group "wordpress"
+      and /srv/wordpress as homedir
+  user:
+    name: wordpress
+    group: wordpress
+    home: /srv/wordpress
+    state: present
+  tags: wp
+
+- name: >
+      Copy WordPress config file from templates
+      to /srv/wordpress/wp-config.php
+  template:
+      src: templates/wp-config.php.j2
+      dest: /srv/wordpress/wp-config.php
+      owner: ansible
+      group: ansible
+      mode: 0644
+  tags: wp
+
+- name: >
+    /srv/wordpress directory recursive rights
+    for wordpress user and group
+  file:
+    path: /srv/wordpress
+    state: directory
+    recurse: yes
+    owner: wordpress
+    group: wordpress
+  tags: wp
+
+- name: Start php-fpm Service
+  service: 
+    name: php-fpm
+    state: started
+    enabled: true
+  tags: wp
+  notify: restart nginx
+

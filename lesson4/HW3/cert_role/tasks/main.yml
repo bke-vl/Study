@@ -1,0 +1,35 @@
+#ansible-galaxy collection install community.crypto
+- name: Create a directory for certificates
+  ansible.builtin.file:
+    path: /tmp/certs/
+    state: directory
+    mode: '0755'
+  tags: cert
+
+- name: Create private key (RSA, 4096 bits)
+  community.crypto.openssl_privatekey:
+    path: /tmp/certs/{{ ansible_host }}.key
+  tags: cert
+
+- name: Create certificate signing request (CSR) for self-signed certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: /tmp/certs/{{ ansible_host }}.key
+    common_name: "{{ ansible_host }}"
+    organization_name: Tenzor
+    subject_alt_name: "DNS:ansible.local"
+  register: csr
+  tags: cert
+
+- name: Create self-signed certificate from CSR
+  community.crypto.x509_certificate:
+    path: /tmp/certs/{{ ansible_host }}.pem
+    csr_content: "{{ csr.csr }}"
+    privatekey_path: /tmp/certs/{{ ansible_host }}.key
+    provider: selfsigned
+  tags: cert
+
+- name: Create simple self-signed certificate
+  community.crypto.x509_certificate:
+    path: /tmp/certs/{{ ansible_host }}.pem
+    privatekey_path: /tmp/certs/{{ ansible_host }}.key
+    provider: selfsigned
